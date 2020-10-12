@@ -6,14 +6,16 @@ public class Cuenta {
 	private String codCuenta;
 	private String idTitularCuenta;
 	private String nombreTitularCuenta;
+	private int saldo;
 	public Cuenta(String codBanco, String tipoCuenta, String codCuenta, String idTitularCuenta,
-			String nombreTitularCuenta) {
+			String nombreTitularCuenta, int saldo) {
 		super();
 		this.codBanco = codBanco;
 		this.tipoCuenta = tipoCuenta;
 		this.codCuenta = codCuenta;
 		this.idTitularCuenta = idTitularCuenta;
 		this.nombreTitularCuenta = nombreTitularCuenta;
+		this.saldo = saldo;
 	}
 	public Cuenta() {
 		super();
@@ -47,6 +49,12 @@ public class Cuenta {
 	}
 	public void setNombreTitularCuenta(String nombreTitularCuenta) {
 		this.nombreTitularCuenta = nombreTitularCuenta;
+	}
+	public int getSaldo() {
+		return saldo;
+	}
+	public void setSaldo(int saldo) {
+		this.saldo = saldo;
 	}
 	
 	

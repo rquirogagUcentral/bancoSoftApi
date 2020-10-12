@@ -5,17 +5,16 @@ public class TransaccionPagoRequest {
 	private String referencia;
 	private String urlRetorno;
 	private OrigenComercio origenComercio;
-	private DestinoComercio destinoComercio;
-	private String recursoId;
+	private Cuenta destinoComercio;
+	
 	public TransaccionPagoRequest(String codPasarela, String referencia, String urlRetorno,
-			OrigenComercio origenComercio, DestinoComercio destinoComercio, String recursoId) {
+			OrigenComercio origenComercio, Cuenta destinoComercio) {
 		super();
 		this.codPasarela = codPasarela;
 		this.referencia = referencia;
 		this.urlRetorno = urlRetorno;
 		this.origenComercio = origenComercio;
 		this.destinoComercio = destinoComercio;
-		this.recursoId = recursoId;
 	}
 	public TransaccionPagoRequest() {
 		super();
@@ -44,17 +43,10 @@ public class TransaccionPagoRequest {
 	public void setOrigenComercio(OrigenComercio origenComercio) {
 		this.origenComercio = origenComercio;
 	}
-	public DestinoComercio getDestinoComercio() {
+	public Cuenta getDestinoComercio() {
 		return destinoComercio;
 	}
-	public void setDestinoComercio(DestinoComercio destinoComercio) {
+	public void setDestinoComercio(Cuenta destinoComercio) {
 		this.destinoComercio = destinoComercio;
-	}
-	public String getRecursoId() {
-		return recursoId;
-	}
-	public void setRecursoId(String recursoId) {
-		this.recursoId = recursoId;
-	}
-	
+	}	
 }

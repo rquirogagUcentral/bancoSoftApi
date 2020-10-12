@@ -1,45 +1,35 @@
 package com.bancosoft.ws.rest.mo;
 
-public class TransaccionConsultaRequest {
+public class TransaccionNotificacionRequest {
 	private String referencia;
 	private String codPasarela;
-	private String idAplicacion;
-	
-	public TransaccionConsultaRequest(String referencia, String codPasarela, String idAplicacion) {
+	private Transaccion transaccion;
+	public TransaccionNotificacionRequest(String referencia, String codPasarela, Transaccion transaccion) {
 		super();
 		this.referencia = referencia;
 		this.codPasarela = codPasarela;
-		this.idAplicacion = idAplicacion;
+		this.transaccion = transaccion;
 	}
-
-	public TransaccionConsultaRequest() {
+	public TransaccionNotificacionRequest() {
 		super();
 	}
-
 	public String getReferencia() {
 		return referencia;
 	}
-
 	public void setReferencia(String referencia) {
 		this.referencia = referencia;
 	}
-
 	public String getCodPasarela() {
 		return codPasarela;
 	}
-
 	public void setCodPasarela(String codPasarela) {
 		this.codPasarela = codPasarela;
 	}
-
-	public String getIdAplicacion() {
-		return idAplicacion;
+	public Transaccion getTransaccion() {
+		return transaccion;
 	}
-
-	public void setIdAplicacion(String idAplicacion) {
-		this.idAplicacion = idAplicacion;
+	public void setTransaccion(Transaccion transaccion) {
+		this.transaccion = transaccion;
 	}
-	
-	
 	
 }
