@@ -1,6 +1,8 @@
 package com.bancosoft.ws.rest.mo;
 
-public class Cuenta {
+import com.bancosoft.ws.rest.Facade.ICrudServices;
+
+public class Cuenta implements ICrudServices{
 	private String codBanco;
 	private String tipoCuenta;
 	private String codCuenta;
@@ -55,6 +57,26 @@ public class Cuenta {
 	}
 	public void setSaldo(int saldo) {
 		this.saldo = saldo;
+	}
+	@Override
+	public Object consutar(Object request) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public boolean crear(Object request) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	@Override
+	public boolean actualizar(Object request) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	@Override
+	public boolean eliminar(Object request) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 	
 	

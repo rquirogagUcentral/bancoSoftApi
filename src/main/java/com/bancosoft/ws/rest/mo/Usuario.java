@@ -1,6 +1,14 @@
 package com.bancosoft.ws.rest.mo;
 
-public class Usuario {
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.bancosoft.ws.rest.Facade.ICrudServices;
+
+import com.bancosoft.ws.rest.DAO.Singleton;
+
+public class Usuario implements ICrudServices{
 	private int id;
 	private String tipoDocumento;
 	private String contrasena;
@@ -65,5 +73,42 @@ public class Usuario {
 		this.correo = correo;
 	}
 	
-	
+	public Object consutar(Object request) {
+		ConsultaUsuarioResponse cur = new ConsultaUsuarioResponse();
+		ConsultaUsuarioRequest cu = new ConsultaUsuarioRequest(); 
+		
+		cu=(ConsultaUsuarioRequest) request;
+		
+		List<Cuenta> Cuentas = new ArrayList<Cuenta>();
+		
+		
+		Cuenta cuentaA = new Cuenta("1001", "00", "234-5678-89", "12340934", "Leidy Johana Llanos Culma", 100);
+		Cuenta cuentaB = new Cuenta("1001", "00", "234-982348-84", "12340934", "Leidy Johana Llanos Culma", 500);
+		
+		cur.setEstado("OK");
+		cur.setUsuario(new Usuario(103234434,"CC","","00","Leidy Johanna","Llanos Culma","lllanosc@uceuntal.edu.co"));
+		Cuentas.add(cuentaA);
+		Cuentas.add(cuentaB);
+		cur.setCuentas(Cuentas);
+		
+		Connection connection=Singleton.getConnection();
+		
+		return cur;
+		
+	}
+	@Override
+	public boolean crear(Object request) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	@Override
+	public boolean actualizar(Object request) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	@Override
+	public boolean eliminar(Object request) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }
