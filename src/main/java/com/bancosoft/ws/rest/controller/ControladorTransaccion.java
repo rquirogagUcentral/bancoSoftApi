@@ -1,5 +1,6 @@
 package com.bancosoft.ws.rest.controller;
 
+import com.bancosoft.ws.rest.mo.Transaccion;
 import com.bancosoft.ws.rest.mo.TransaccionConsultaRequest;
 import com.bancosoft.ws.rest.mo.TransaccionConsultaResponse;
 import com.bancosoft.ws.rest.mo.TransaccionNotificacionRequest;
@@ -10,16 +11,16 @@ public class ControladorTransaccion {
 
 	public TransaccionPagoResponse crearTransaccion(TransaccionPagoRequest request) {
 		
-		return new Transacciones().crearTransaccion(request);
+		return new Transaccion().crearTransaccion(request);
 	}
 
 	public TransaccionPagoResponse notificarTransaccion(TransaccionNotificacionRequest request) {
 		
-		return  new Transacciones().notificarTransaccion(request);
+		return  new Transaccion().notificarTransaccion(request);
 	}
 	
 	public TransaccionConsultaResponse consultaTransaccion(TransaccionConsultaRequest request)
 	{
-		return new Transacciones().consultaTransaccion(request);
+		return new Transaccion().consultaTransaccion(request);
 	}
 }

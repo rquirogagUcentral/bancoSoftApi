@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.bancosoft.ws.rest.Facade.ICrudServices;
-
+import com.bancosoft.ws.rest.DAO.ProductDAO;
 import com.bancosoft.ws.rest.DAO.Singleton;
 
 public class Usuario implements ICrudServices{
@@ -16,6 +16,9 @@ public class Usuario implements ICrudServices{
 	private String nombre;
 	private String apellido;
 	private String correo;
+	
+	ProductDAO pd =  new ProductDAO();
+	
 	public Usuario(int id, String tipoDocumento, String contrasena, String tipoUsuario, String nombre, String apellido,
 			String correo) {
 		super();
@@ -76,25 +79,57 @@ public class Usuario implements ICrudServices{
 	public Object consutar(Object request) {
 		ConsultaUsuarioResponse cur = new ConsultaUsuarioResponse();
 		ConsultaUsuarioRequest cu = new ConsultaUsuarioRequest(); 
+	
+		List<Cuenta> cuentas = new ArrayList<Cuenta>();
+		Usuario usuario = new Usuario();
 		
 		cu=(ConsultaUsuarioRequest) request;
-		
-		List<Cuenta> Cuentas = new ArrayList<Cuenta>();
-		
-		
-		Cuenta cuentaA = new Cuenta("1001", "00", "234-5678-89", "12340934", "Leidy Johana Llanos Culma", 100);
-		Cuenta cuentaB = new Cuenta("1001", "00", "234-982348-84", "12340934", "Leidy Johana Llanos Culma", 500);
-		
-		cur.setEstado("OK");
-		cur.setUsuario(new Usuario(103234434,"CC","","00","Leidy Johanna","Llanos Culma","lllanosc@uceuntal.edu.co"));
-		Cuentas.add(cuentaA);
-		Cuentas.add(cuentaB);
-		cur.setCuentas(Cuentas);
-		
-		Connection connection=Singleton.getConnection();
+		boolean existe = false;
+		String nombreConcat = null;
+		try
+		{
+			
+			usuario= pd.consultaUsuario(cu.getId());
+			existe = (cu.getId() == usuario.getId())? true : false;
+			if(existe)
+			{
+				if(cu.getContrasena().equals(usuario.getContrasena()))
+				{
+					if(cu.getTipoDocumento().equals(usuario.getTipoDocumento()))
+					{
+						nombreConcat = usuario.getNombre() + " " + usuario.getApellido();
+						cuentas = pd.consultaCuentas(cu.getId(), nombreConcat);
+						
+						cur.setEstado("OK");
+						cur.setDescripcionEstado("Consulta Exitosa");
+						cur.setUsuario(usuario);
+						cur.setCuentas(cuentas);
+					}
+					else
+					{
+						cur.setEstado("NO_AUTORIZADO");
+						cur.setDescripcionEstado("ERROR: No coincide el tipo de Documento, por favor valide de nuevo");
+					}
+				}
+				else
+				{
+					cur.setEstado("NO_AUTORIZADO");
+					cur.setDescripcionEstado("ERROR: No coincide la contraseña, por favor valide de nuevo");
+				}
+			}
+			else
+			{
+				cur.setEstado("NO_AUTORIZADO");
+				cur.setDescripcionEstado("ERROR: No se encuentra el usuario inscrito en la base de datos");
+			}
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			cur = null;
+		}
 		
 		return cur;
-		
 	}
 	@Override
 	public boolean crear(Object request) {
