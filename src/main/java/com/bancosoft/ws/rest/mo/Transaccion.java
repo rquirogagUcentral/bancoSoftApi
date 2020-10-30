@@ -1,6 +1,8 @@
 package com.bancosoft.ws.rest.mo;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 import com.bancosoft.ws.rest.DAO.ProductDAO;
@@ -11,6 +13,7 @@ public class Transaccion {
 	private int valor;
 	private Date fechaTransaccion;
 	private String descripcion;
+	private String urlRetorno;
 	private Cuenta cuentaOrigen;
 	private Cuenta cuentaDestino;
 	
@@ -19,13 +22,14 @@ public class Transaccion {
 	
 	ProductDAO pd =  new ProductDAO();
 	
-	public Transaccion(String idTransaccion, int valor, Date fechaTransaccion, String descripcion, Cuenta cuentaOrigen,
+	public Transaccion(String idTransaccion, int valor, Date fechaTransaccion, String descripcion, String urlRetorno,  Cuenta cuentaOrigen,
 			Cuenta cuentaDestino) {
 		super();
 		this.idTransaccion = idTransaccion;
 		this.valor = valor;
 		this.fechaTransaccion = fechaTransaccion;
 		this.descripcion = descripcion;
+		this.urlRetorno = urlRetorno;
 		this.cuentaOrigen = cuentaOrigen;
 		this.cuentaDestino = cuentaDestino;
 	}
@@ -68,6 +72,12 @@ public class Transaccion {
 	public void setCuentaDestino(Cuenta cuentaDestino) {
 		this.cuentaDestino = cuentaDestino;
 	}
+	public String getUrlRetorno() {
+		return urlRetorno;
+	}
+	public void setUrlRetorno(String urlRetorno) {
+		this.urlRetorno = urlRetorno;
+	}
 	public TransaccionPagoResponse crearTransaccion(TransaccionPagoRequest request) {
 		TransaccionPagoResponse tpr = new TransaccionPagoResponse();
 		
@@ -92,7 +102,7 @@ public class Transaccion {
 		        if(insMov)
 		        {
 		        	tpr.setDescripcionEstado("Transaccion creada correctamente");
-					tpr.setEstado("OK");
+					tpr.setEstado("CREADO");
 					tpr.setLifetimeSecs("1234");
 					tpr.setUrlRedirigir(host + "codPasarela="+request.getCodPasarela()+"&referencia="+request.getReferencia());
 					tpr.setidTransaccion(String.valueOf(codTransaccion));
@@ -138,24 +148,15 @@ public class Transaccion {
 		try
 		{
 			tcr = pd.consultaTrans(request);
-			//int saldo = (request.getIdAplicacion().equals("0")) ? 0 : 1000 ;
 			
 			if(tcr != null)
 			{
 				if(request.getCodPasarela().equals(tcr.getCodPasarela()) &&
 					request.getReferencia().equals(tcr.getReferencia()))
 				{
-					tcr.setEstado("OK");
-					tcr.setDescripcionEstado("Id de Transaccion encontrado ");
-					/*tcr.setCodPasarela("1234");
-					tcr.setReferencia("abc1234");
-					tcr.setTransaccion(new Transaccion("10001",
-							1000,
-							new Date(),
-							"Pago de algo jeeje",
-							new Cuenta("1001","00","356-4353-876","10203040","Jessica Maria",saldo),
-							new Cuenta("1001","01","32-6574-546","1032555896","Rosemberg JAJAJ",saldo)
-							));*/
+					if (tcr.getEstado() == null)
+						tcr.setEstado("");
+					tcr.setDescripcionEstado("Id de Transaccion encontrado");
 				}
 				else
 				{
@@ -178,5 +179,35 @@ public class Transaccion {
 		
 					
 		return tcr;
+	}
+	
+	public boolean pagarTransaccion(PagoRequest request) {
+		List<Cuenta> cu = new ArrayList<Cuenta>();
+		int id = 0;
+		boolean resultado = false;
+		try
+		{
+			//id = Integer.parseInt(request.getCuentaOrigen().getIdTitularCuenta());
+			cu = pd.consultaCuentas(Integer.parseInt(request.getCuentaOrigen().getIdTitularCuenta()), request.getCuentaOrigen().getNombreTitularCuenta());
+			//1. De acuerdo al estado envíado , se actualizan las tablas
+			switch (request.getEstado())
+			{
+				case "CANCELADO":
+					resultado = pd.actualizarMovimiento(request.getIdTransaccion(),request.getEstado());
+					break;
+				case "OK":
+					resultado = pd.actualizarMovimiento(request.getIdTransaccion(),request.getEstado());
+					//resultado = pd.realizarmovimiento();
+					break;
+			}
+			//2. Si el estado es OK se busca la cuenta y se actualiza el valor .
+			
+		}
+		catch(Exception e)
+		{
+			e.toString();
+			resultado = false;
+		}
+		return resultado;
 	}
 }

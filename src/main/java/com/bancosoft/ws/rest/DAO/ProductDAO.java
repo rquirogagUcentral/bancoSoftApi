@@ -84,7 +84,7 @@ public class ProductDAO {
 		
 	}
 
-	public boolean InsertaMovimiento(int codTransaccion, TransaccionPagoRequest request) throws SQLException  {
+	public boolean InsertaMovimiento(int codTransaccion, TransaccionPagoRequest request) {
 		Connection connection=Singleton.getConnection();
 		boolean resultado;
 		
@@ -94,7 +94,7 @@ public class ProductDAO {
 			Date fecha = new Date();
 			//Date date = new SimpleDateFormat("yyyy-MM-dd").format(fecha);
 			
-			PreparedStatement ps =  connection.prepareStatement("INSERT INTO MOVIMIENTOS VALUES (?,?,?,?,?,?,?,?,?);");
+			PreparedStatement ps =  connection.prepareStatement("INSERT INTO MOVIMIENTOS VALUES (?,?,?,?,?,?,?,?,?,?);");
 			ps.setInt(1, codTransaccion);
 			ps.setDouble(2, request.getOrigenComercio().getValor());
 			ps.setDate(3, java.sql.Date.valueOf(java.time.LocalDate.now()));
@@ -104,6 +104,7 @@ public class ProductDAO {
 			ps.setString(7, request.getReferencia());
 			ps.setString(8, request.getUrlRetorno());
 			ps.setString(9, request.getOrigenComercio().getRefComercio());
+			ps.setString(10, "CREADO");
 			ps.executeUpdate();
 			resultado =  true;
 		}
@@ -111,7 +112,6 @@ public class ProductDAO {
 		{
 			e.printStackTrace();
 			resultado = false;
-			connection.rollback();
 		}
 		
 		
@@ -138,7 +138,6 @@ public class ProductDAO {
 			{
 				e.printStackTrace();
 				resultado = false;
-				connection.rollback();
 			}
 		}
 		
@@ -161,6 +160,8 @@ public class ProductDAO {
 		Date fechaTx = null;
 		String descriciontx = null;
 		String ref_comercio = null;
+		String urlRetorno = null;
+		String estado = null;
 		
 		String orgCodBanco = null;
 		String orgTipCuenta = null;
@@ -178,7 +179,7 @@ public class ProductDAO {
 		/*Genera la consulta para la tabla Movimientos*/
 		try
 		{
-			PreparedStatement ps = connection.prepareStatement("SELECT ID_MOVIMIENTO, VALOR_TX, FECHA_TX, DESCRIPCION, COD_PASARELA, REFERENCIA_PASARELA, REFERENCIA_COMERCIO FROM MOVIMIENTOS WHERE COD_PASARELA = ? AND REFERENCIA_PASARELA = ?");
+			PreparedStatement ps = connection.prepareStatement("SELECT ID_MOVIMIENTO, VALOR_TX, FECHA_TX, DESCRIPCION, COD_PASARELA, REFERENCIA_PASARELA, REFERENCIA_COMERCIO, URL_RETORNO , ESTADO FROM MOVIMIENTOS WHERE COD_PASARELA = ? AND REFERENCIA_PASARELA = ?");
 			ps.setString(1, request.getCodPasarela());
 			ps.setString(2, request.getReferencia());
 			ResultSet rs= ps.executeQuery();
@@ -191,6 +192,8 @@ public class ProductDAO {
 			    codPasarela = rs.getString(5);
 			    referencia = rs.getString(6);
 			    ref_comercio = rs.getString(7);
+			    urlRetorno = rs.getString(8);
+			    estado = rs.getString(9);
 			}
 		}
 		catch(Exception e)
@@ -230,11 +233,13 @@ public class ProductDAO {
 		{
 			tcr.setReferencia(referencia);
 			tcr.setCodPasarela(codPasarela);
+			tcr.setEstado(estado);
 			
 			tx.setIdTransaccion(idTransaccion);
 			tx.setValor(valortx);
 			tx.setFechaTransaccion(fechaTx);
 			tx.setDescripcion(descriciontx);
+			tx.setUrlRetorno(urlRetorno);
 			
 			origen.setCodBanco(orgCodBanco);
 			origen.setTipoCuenta(orgTipCuenta);
@@ -334,6 +339,12 @@ public class ProductDAO {
 		}
 		
 		return cu;
+	}
+
+	public boolean actualizarMovimiento(String idTransaccion, String estado) {
+		// TODO Auto-generated method stub
+		
+		return false;
 	}	
 	
 	//endregion 

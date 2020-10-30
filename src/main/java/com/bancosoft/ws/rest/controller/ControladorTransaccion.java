@@ -1,5 +1,6 @@
 package com.bancosoft.ws.rest.controller;
 
+import com.bancosoft.ws.rest.mo.PagoRequest;
 import com.bancosoft.ws.rest.mo.Transaccion;
 import com.bancosoft.ws.rest.mo.TransaccionConsultaRequest;
 import com.bancosoft.ws.rest.mo.TransaccionConsultaResponse;
@@ -22,5 +23,10 @@ public class ControladorTransaccion {
 	public TransaccionConsultaResponse consultaTransaccion(TransaccionConsultaRequest request)
 	{
 		return new Transaccion().consultaTransaccion(request);
+	}
+	
+	public boolean pagarTransaccion(PagoRequest request)
+	{
+		return new Transaccion().pagarTransaccion(request);
 	}
 }
