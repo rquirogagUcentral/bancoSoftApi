@@ -35,13 +35,36 @@ public class ServiceTransaccionPago {
 		{
 			response = ct.crearTransaccion(request);
 			if(response.getEstado().equals("CREADO"))
-				return Response.status(Response.Status.OK).entity(response).build();
+				return Response.status(Response.Status.OK)
+						.header("Access-Control-Allow-Origin", "*")
+					    .header("Access-Control-Allow-Credentials", "true")
+					    .header("Access-Control-Allow-Headers",
+					      "origin, content-type, accept, authorization")
+					    .header("Access-Control-Allow-Methods", 
+					        "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+						.entity(response).build();
 			else
-				return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response).build();
+			{
+				return Response.status(Response.Status.NOT_ACCEPTABLE)
+						.header("Access-Control-Allow-Origin", "*")
+					    .header("Access-Control-Allow-Credentials", "true")
+					    .header("Access-Control-Allow-Headers",
+					      "origin, content-type, accept, authorization")
+					    .header("Access-Control-Allow-Methods", 
+					        "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+						.entity(response).build();
+			}
 		}
 		catch(Exception e)
 		{
-			return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
+			return Response.status(Response.Status.BAD_REQUEST)
+					.header("Access-Control-Allow-Origin", "*")
+				    .header("Access-Control-Allow-Credentials", "true")
+				    .header("Access-Control-Allow-Headers",
+				      "origin, content-type, accept, authorization")
+				    .header("Access-Control-Allow-Methods", 
+				        "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+					.entity(response).build();
 		}
 	}
 	
@@ -57,13 +80,38 @@ public class ServiceTransaccionPago {
 		{
 			response = ct.notificarTransaccion(request);
 			if(response.getEstado().equals("OK"))
-				return Response.status(Response.Status.OK).entity(response).build();
+			{
+				return Response.status(Response.Status.OK)
+						.header("Access-Control-Allow-Origin", "*")
+					    .header("Access-Control-Allow-Credentials", "true")
+					    .header("Access-Control-Allow-Headers",
+					      "origin, content-type, accept, authorization")
+					    .header("Access-Control-Allow-Methods", 
+					        "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+						.entity(response).build();
+			}
 			else
-				return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response).build();
+			{
+				return Response.status(Response.Status.NOT_ACCEPTABLE)
+						.header("Access-Control-Allow-Origin", "*")
+					    .header("Access-Control-Allow-Credentials", "true")
+					    .header("Access-Control-Allow-Headers",
+					      "origin, content-type, accept, authorization")
+					    .header("Access-Control-Allow-Methods", 
+					        "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+						.entity(response).build();
+			}
 		}
 		catch(Exception e)
 		{
-			return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
+			return Response.status(Response.Status.BAD_REQUEST)
+					.header("Access-Control-Allow-Origin", "*")
+				    .header("Access-Control-Allow-Credentials", "true")
+				    .header("Access-Control-Allow-Headers",
+				      "origin, content-type, accept, authorization")
+				    .header("Access-Control-Allow-Methods", 
+				        "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+					.entity(response).build();
 		}
 	}
 	
@@ -83,16 +131,37 @@ public class ServiceTransaccionPago {
 				case "OK":
 				case "CANCELADO":
 				case "CREADO":
-					return Response.status(Response.Status.OK).entity(response).build();
+					return Response.status(Response.Status.OK)
+							.header("Access-Control-Allow-Origin", "*")
+						    .header("Access-Control-Allow-Credentials", "true")
+						    .header("Access-Control-Allow-Headers",
+						      "origin, content-type, accept, authorization")
+						    .header("Access-Control-Allow-Methods", 
+						        "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+							.entity(response).build();
 					
 				default:
-					return Response.status(Response.Status.NOT_FOUND).entity(response).build();
+					return Response.status(Response.Status.NOT_FOUND)
+							.header("Access-Control-Allow-Origin", "*")
+						    .header("Access-Control-Allow-Credentials", "true")
+						    .header("Access-Control-Allow-Headers",
+						      "origin, content-type, accept, authorization")
+						    .header("Access-Control-Allow-Methods", 
+						        "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+							.entity(response).build();
 			}
 			
 		}
 		catch (Exception e)
 		{
-			return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
+			return Response.status(Response.Status.BAD_REQUEST)
+					.header("Access-Control-Allow-Origin", "*")
+				    .header("Access-Control-Allow-Credentials", "true")
+				    .header("Access-Control-Allow-Headers",
+				      "origin, content-type, accept, authorization")
+				    .header("Access-Control-Allow-Methods", 
+				        "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+					.entity(response).build();
 		}
 	}
 	
@@ -111,13 +180,38 @@ public class ServiceTransaccionPago {
 			ICrudServices iCrudUsuario =  new Usuario();
 			response = (ConsultaUsuarioResponse) iCrudUsuario.consutar(request);
 			if(response.getEstado().equals("OK"))
-				return Response.status(Response.Status.OK).entity(response).build();
+			{
+				return Response.status(Response.Status.OK)
+						.header("Access-Control-Allow-Origin", "*")
+					    .header("Access-Control-Allow-Credentials", "true")
+					    .header("Access-Control-Allow-Headers",
+					      "origin, content-type, accept, authorization")
+					    .header("Access-Control-Allow-Methods", 
+					        "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+						.entity(response).build();
+			}
 			else
-				return Response.status(Response.Status.NOT_FOUND).entity(response).build();
+			{
+				return Response.status(Response.Status.NOT_FOUND)
+						.header("Access-Control-Allow-Origin", "*")
+					    .header("Access-Control-Allow-Credentials", "true")
+					    .header("Access-Control-Allow-Headers",
+					      "origin, content-type, accept, authorization")
+					    .header("Access-Control-Allow-Methods", 
+					        "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+						.entity(response).build();
+			}
 		}
 		catch (Exception e)
 		{
-			return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
+			return Response.status(Response.Status.BAD_REQUEST)
+					.header("Access-Control-Allow-Origin", "*")
+				    .header("Access-Control-Allow-Credentials", "true")
+				    .header("Access-Control-Allow-Headers",
+				      "origin, content-type, accept, authorization")
+				    .header("Access-Control-Allow-Methods", 
+				        "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+					.entity(response).build();
 		}
 	}
 	
@@ -136,20 +230,43 @@ public class ServiceTransaccionPago {
 			{
 				response.setEstado("OK");
 				response.setDescripcionEstado("Pago finalizado correctamente");
+				return Response.status(Response.Status.OK)
+						.header("Access-Control-Allow-Origin", "*")
+					    .header("Access-Control-Allow-Credentials", "true")
+					    .header("Access-Control-Allow-Headers",
+					      "origin, content-type, accept, authorization")
+					    .header("Access-Control-Allow-Methods", 
+					        "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+						.entity(response).build();
 			}
 			else
 			{
 				response.setEstado("FALLIDO");
 				response.setDescripcionEstado("El pago no se ha podido finalizar, intente nuevamente.");
+				return Response.status(Response.Status.OK)
+						.header("Access-Control-Allow-Origin", "*")
+					    .header("Access-Control-Allow-Credentials", "true")
+					    .header("Access-Control-Allow-Headers",
+					      "origin, content-type, accept, authorization")
+					    .header("Access-Control-Allow-Methods", 
+					        "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+						.entity(response).build();
 			}
-			return Response.status(Response.Status.OK).entity(response).build();
+			
 		}
 		catch(Exception e)
 		{
 			e.toString();
 			response.setEstado("FALLIDO");
 			response.setDescripcionEstado("El pago no se ha podido finalizar, intente nuevamente. ");
-			return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
+			return Response.status(Response.Status.BAD_REQUEST)
+					.header("Access-Control-Allow-Origin", "*")
+				    .header("Access-Control-Allow-Credentials", "true")
+				    .header("Access-Control-Allow-Headers",
+				      "origin, content-type, accept, authorization")
+				    .header("Access-Control-Allow-Methods", 
+				        "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+					.entity(response).build();
 		}
 	
 	}

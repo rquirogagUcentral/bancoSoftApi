@@ -23,10 +23,10 @@ public class Singleton {
     private static final String DB_USER_PROP ="user1";
     private static final String DB_USER2_PROP ="user2";
     
-    private Singleton()
+    public Singleton()
     {
         try{
-        	new com.mysql.jdbc.Driver();
+        	//new com.mysql.jdbc.Driver();
             conn=cadenaConexion();
         }
         catch(Exception e)
@@ -35,9 +35,12 @@ public class Singleton {
         }
     }
 	    
-    public Connection cadenaConexion() {
+    public static Connection cadenaConexion() {
+    	
         try 
         {
+        	new com.mysql.jdbc.Driver();
+        	
         	Properties prop = PropertiesUtil.loadProperty(DB_PROPERTIES);
 	        String host = prop.getProperty(DB_HOST_PROP);
 	        String port = prop.getProperty(DB_PORT_PROP);

@@ -22,7 +22,8 @@ public class ProductDAO {
 	//region ProductDao-Transacciones
 	
 	public boolean consultarPasarela(String codPasarela) {
-		Connection connection=Singleton.getConnection();
+		Connection connection = Singleton.cadenaConexion();
+		//Connection connection=Singleton.getConnection();
 		int codigo = 0;
 		try
 		{
@@ -46,11 +47,20 @@ public class ProductDAO {
 			e.printStackTrace();
 			return false;
 		}
+		finally {
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public int proxCodTransaccion(String metodo) {
 		
-		Connection connection=Singleton.getConnection();
+		//Connection connection=Singleton.getConnection();
+		Connection connection = Singleton.cadenaConexion();
 		
 		int proximoCod = 0;
 		try
@@ -81,11 +91,20 @@ public class ProductDAO {
 			e.printStackTrace();
 			return 0;
 		}
+		finally {
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		
 	}
 
 	public boolean InsertaMovimiento(int codTransaccion, TransaccionPagoRequest request) {
-		Connection connection=Singleton.getConnection();
+		//Connection connection=Singleton.getConnection();
+		Connection connection = Singleton.cadenaConexion();
 		boolean resultado;
 		
 		try
@@ -139,6 +158,14 @@ public class ProductDAO {
 				e.printStackTrace();
 				resultado = false;
 			}
+			finally {
+				try {
+					connection.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 		}
 		
 		return resultado;
@@ -150,7 +177,8 @@ public class ProductDAO {
 		Transaccion tx = new Transaccion();
 		Cuenta origen = new Cuenta();
 		Cuenta destino = new Cuenta();
-		Connection connection=Singleton.getConnection();
+		//Connection connection=Singleton.getConnection();
+		Connection connection = Singleton.cadenaConexion();
 		
 		/*Variables temporales para crear el response*/
 		String referencia = null;
@@ -173,8 +201,6 @@ public class ProductDAO {
 		String destCodCuenta = null;
 		String destIdTitular = null;
 		String destNombTitular = null;
-		
-		
 		
 		/*Genera la consulta para la tabla Movimientos*/
 		try
@@ -227,6 +253,14 @@ public class ProductDAO {
 		{
 			e.printStackTrace();
 		}
+		finally {
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		
 		
 		try
@@ -271,7 +305,8 @@ public class ProductDAO {
 	//region ProductDao-Usuario
 
 	public Usuario consultaUsuario(int id) {
-		Connection connection=Singleton.getConnection();
+		//Connection connection=Singleton.getConnection();
+		Connection connection = Singleton.cadenaConexion();
 		Usuario usu = null;
 		int captid;
 		String tId = null;
@@ -315,11 +350,20 @@ public class ProductDAO {
 			e.printStackTrace();
 			usu = null;
 		}
+		finally {
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		return usu;
 	}
 
 	public List<Cuenta> consultaCuentas(int id, String nombre) {
-		Connection connection=Singleton.getConnection();
+		//Connection connection=Singleton.getConnection();
+		Connection connection = Singleton.cadenaConexion();
 		List<Cuenta> cu = new ArrayList<Cuenta>();
 		
 		try
@@ -337,12 +381,20 @@ public class ProductDAO {
 		{
 			e.printStackTrace();
 		}
-		
+		finally {
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		return cu;
 	}
 
 	public boolean actualizarMovimiento(String idTransaccion, String estado) {
 		// TODO Auto-generated method stub
+		Connection connection = Singleton.cadenaConexion();
 		
 		return false;
 	}	
