@@ -90,7 +90,8 @@ public class Usuario implements ICrudServices{
 		{
 			
 			usuario= pd.consultaUsuario(cu.getId());
-			existe = (cu.getId() == usuario.getId())? true : false;
+			
+			existe = (usuario != null) ? (cu.getId() == usuario.getId())? true : false : false;
 			if(existe)
 			{
 				if(cu.getContrasena().equals(usuario.getContrasena()))

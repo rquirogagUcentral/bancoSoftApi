@@ -5,9 +5,9 @@ import java.util.Date;
 public class PagoRequest {
 	private String idTransaccion;
 	private String estado;
-	private Date fechaTransaccion;
+	private String fechaTransaccion;
 	private Cuenta cuentaOrigen;
-	public PagoRequest(String idTransaccion, String estado, Date fechaTransaccion, Cuenta cuentaOrigen) {
+	public PagoRequest(String idTransaccion, String estado, String fechaTransaccion, Cuenta cuentaOrigen) {
 		super();
 		this.idTransaccion = idTransaccion;
 		this.estado = estado;
@@ -29,10 +29,10 @@ public class PagoRequest {
 	public void setEstado(String estado) {
 		this.estado = estado;
 	}
-	public Date getFechaTransaccion() {
+	public String getFechaTransaccion() {
 		return fechaTransaccion;
 	}
-	public void setFechaTransaccion(Date fechaTransaccion) {
+	public void setFechaTransaccion(String fechaTransaccion) {
 		this.fechaTransaccion = fechaTransaccion;
 	}
 	public Cuenta getCuentaOrigen() {

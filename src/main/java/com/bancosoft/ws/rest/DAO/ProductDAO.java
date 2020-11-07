@@ -3,11 +3,18 @@ package com.bancosoft.ws.rest.DAO;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Formatter;
 import java.util.List;
+import java.util.TimeZone;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.concurrent.ExecutionException;
 
 import com.bancosoft.ws.rest.mo.Cuenta;
@@ -16,10 +23,14 @@ import com.bancosoft.ws.rest.mo.TransaccionConsultaRequest;
 import com.bancosoft.ws.rest.mo.TransaccionConsultaResponse;
 import com.bancosoft.ws.rest.mo.TransaccionPagoRequest;
 import com.bancosoft.ws.rest.mo.Usuario;
+import com.bancosoft.ws.rest.util.PropertiesUtil;
+import com.sun.jersey.server.impl.model.parameter.multivalued.StringReaderProviders.TypeValueOf;
 
 public class ProductDAO {
 
 	//region ProductDao-Transacciones
+	PropertiesUtil pu = new PropertiesUtil();
+	
 	
 	public boolean consultarPasarela(String codPasarela) {
 		Connection connection = Singleton.cadenaConexion();
@@ -109,14 +120,17 @@ public class ProductDAO {
 		
 		try
 		{
-			/*Ajusta la fecha*/
-			Date fecha = new Date();
-			//Date date = new SimpleDateFormat("yyyy-MM-dd").format(fecha);
 			
-			PreparedStatement ps =  connection.prepareStatement("INSERT INTO MOVIMIENTOS VALUES (?,?,?,?,?,?,?,?,?,?);");
+			/*Ajusta la fecha*/
+			Date dt= new Date();
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			sdf.setTimeZone(TimeZone.getTimeZone("America/Bogota"));
+			String currentTime = sdf.format(dt);
+			
+			PreparedStatement ps =  connection.prepareStatement("INSERT INTO MOVIMIENTOS VALUES (?,?,?,?,?,?,?,?,?,?,?);");
 			ps.setInt(1, codTransaccion);
 			ps.setDouble(2, request.getOrigenComercio().getValor());
-			ps.setDate(3, java.sql.Date.valueOf(java.time.LocalDate.now()));
+			ps.setTimestamp(3, java.sql.Timestamp.valueOf(currentTime));
 			ps.setString(4, request.getOrigenComercio().getDescripcion());
 			ps.setInt(5, 0);
 			ps.setString(6, request.getCodPasarela());
@@ -124,6 +138,7 @@ public class ProductDAO {
 			ps.setString(8, request.getUrlRetorno());
 			ps.setString(9, request.getOrigenComercio().getRefComercio());
 			ps.setString(10, "CREADO");
+			ps.setInt(11, 1);
 			ps.executeUpdate();
 			resultado =  true;
 		}
@@ -185,11 +200,12 @@ public class ProductDAO {
 		String codPasarela = null;
 		String idTransaccion = null;
 		int valortx = 0;
-		Date fechaTx = null;
+		Timestamp fechaTx = null;
 		String descriciontx = null;
 		String ref_comercio = null;
 		String urlRetorno = null;
 		String estado = null;
+		int uso = 0;
 		
 		String orgCodBanco = null;
 		String orgTipCuenta = null;
@@ -202,10 +218,12 @@ public class ProductDAO {
 		String destIdTitular = null;
 		String destNombTitular = null;
 		
+		String fechaTrans = null;
+		
 		/*Genera la consulta para la tabla Movimientos*/
 		try
 		{
-			PreparedStatement ps = connection.prepareStatement("SELECT ID_MOVIMIENTO, VALOR_TX, FECHA_TX, DESCRIPCION, COD_PASARELA, REFERENCIA_PASARELA, REFERENCIA_COMERCIO, URL_RETORNO , ESTADO FROM MOVIMIENTOS WHERE COD_PASARELA = ? AND REFERENCIA_PASARELA = ?");
+			PreparedStatement ps = connection.prepareStatement("SELECT ID_MOVIMIENTO, VALOR_TX, FECHA_TX, DESCRIPCION, COD_PASARELA, REFERENCIA_PASARELA, REFERENCIA_COMERCIO, URL_RETORNO , ESTADO, USO FROM MOVIMIENTOS WHERE COD_PASARELA = ? AND REFERENCIA_PASARELA = ?");
 			ps.setString(1, request.getCodPasarela());
 			ps.setString(2, request.getReferencia());
 			ResultSet rs= ps.executeQuery();
@@ -213,13 +231,18 @@ public class ProductDAO {
 			{
 			    idTransaccion = rs.getString(1);
 			    valortx = rs.getInt(2);
-			    fechaTx = rs.getDate(3);
+			    fechaTx = rs.getTimestamp(3);
 			    descriciontx = rs.getString(4);
 			    codPasarela = rs.getString(5);
 			    referencia = rs.getString(6);
 			    ref_comercio = rs.getString(7);
 			    urlRetorno = rs.getString(8);
 			    estado = rs.getString(9);
+			    uso = rs.getInt(10);
+			    
+			    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			    String currentTime = sdf.format(fechaTx);
+			    fechaTrans =   currentTime;
 			}
 		}
 		catch(Exception e)
@@ -271,9 +294,10 @@ public class ProductDAO {
 			
 			tx.setIdTransaccion(idTransaccion);
 			tx.setValor(valortx);
-			tx.setFechaTransaccion(fechaTx);
+			tx.setFechaTransaccion(fechaTrans);
 			tx.setDescripcion(descriciontx);
 			tx.setUrlRetorno(urlRetorno);
+			tx.setUso(uso);
 			
 			origen.setCodBanco(orgCodBanco);
 			origen.setTipoCuenta(orgTipCuenta);
@@ -392,11 +416,137 @@ public class ProductDAO {
 		return cu;
 	}
 
-	public boolean actualizarMovimiento(String idTransaccion, String estado) {
+	public boolean actualizarMovimiento(String idTransaccion, String estado, Cuenta cuenta) {
 		// TODO Auto-generated method stub
 		Connection connection = Singleton.cadenaConexion();
+		boolean resultado = false;
+		int uso = 0;
 		
-		return false;
+		
+		try
+		{
+			PreparedStatement ps = connection.prepareStatement("UPDATE MOVIMIENTOS SET ESTADO = ? , USO = ? WHERE ID_MOVIMIENTO = ?");
+			ps.setString(1, estado);
+			ps.setInt(2, uso);
+			ps.setString(3, idTransaccion);
+			ps.executeUpdate();
+			resultado = true;
+		}
+		catch (Exception e)
+		{
+			e.toString();
+			resultado = false;
+		}
+		
+		if (resultado)
+		{
+			try
+			{
+				PreparedStatement pst = connection.prepareStatement("UPDATE MOVIMIENTO_CUENTAS SET ORIG_COD_BANCO = ? , ORIG_TIPO_CUENTA = ? , ORIG_COD_CUENTA = ? , ORIG_ID_TITULAR = ? , ORIG_NOMB_TITULAR = ? WHERE ID_MOVIMIENTO = ?");
+				pst.setString(1, cuenta.getCodBanco());
+				pst.setString(2, cuenta.getTipoCuenta());
+				pst.setString(3, cuenta.getCodCuenta());
+				pst.setString(4, cuenta.getIdTitularCuenta());
+				pst.setString(5, cuenta.getNombreTitularCuenta());
+				pst.setString(6, idTransaccion);
+				pst.executeUpdate();
+				resultado = true;
+			}
+			catch(Exception e)
+			{
+				e.toString();
+				resultado = false;
+			}
+		}
+		
+		return resultado;
+	}
+
+	public Transaccion consultaTransaccion(String idTransaccion) 
+	{
+		Connection connection = Singleton.cadenaConexion();
+		Transaccion tx = new Transaccion();
+		
+		String referencia = null;
+		String codPasarela = null;
+		String idTrans = null;
+		int valortx = 0;
+		Timestamp fechaTx = null;
+		String descriciontx = null;
+		String ref_comercio = null;
+		String urlRetorno = null;
+		String estado = null;
+		int uso = 0;
+		String fechaTrans = null;
+		
+		try 
+		{
+			PreparedStatement ps = connection.prepareStatement("SELECT ID_MOVIMIENTO, VALOR_TX, FECHA_TX, DESCRIPCION, COD_PASARELA, REFERENCIA_PASARELA, REFERENCIA_COMERCIO, URL_RETORNO , ESTADO, USO FROM MOVIMIENTOS WHERE ID_MOVIMIENTO = ? ");
+			ps.setString(1, idTransaccion);
+			ResultSet rs= ps.executeQuery();
+			while(rs.next())
+			{
+				idTrans = rs.getString(1);
+			    valortx = rs.getInt(2);
+			    fechaTx = rs.getTimestamp(3);
+			    descriciontx = rs.getString(4);
+			    codPasarela = rs.getString(5);
+			    referencia = rs.getString(6);
+			    ref_comercio = rs.getString(7);
+			    urlRetorno = rs.getString(8);
+			    estado = rs.getString(9);
+			    uso = rs.getInt(10);
+			    
+			    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			    String currentTime = sdf.format(fechaTx);
+			    fechaTrans =   currentTime;
+			}
+			
+			tx.setIdTransaccion(idTransaccion);
+			tx.setValor(valortx);
+			tx.setFechaTransaccion(fechaTrans);
+			tx.setDescripcion(descriciontx);
+			tx.setUrlRetorno(urlRetorno);
+			tx.setUso(uso);
+			
+			
+		}
+		catch(Exception e)
+		{
+			e.toString();
+			tx = null;
+		}
+		return tx;
+	}
+
+	public boolean actualizarCuenta(Cuenta objCuenta, int tipoTransaccion, int valor) {
+		
+		Connection connection = Singleton.cadenaConexion();
+		boolean resultado = false ;
+		int saldoResultado = 0;
+		try
+		{
+			if (tipoTransaccion == 0)
+				saldoResultado = pu.operación(objCuenta.getSaldo(),valor,"DEBITO");//Debito a la cuenta				
+			else
+				saldoResultado = pu.operación(objCuenta.getSaldo(),valor,"DEBITO");//Deposita en cuenta
+			
+			PreparedStatement pst = connection.prepareStatement("UPDATE CUENTAS SET SALDO_CUENTA = ? WHERE NUMERO_CUENTA = ?");
+			pst.setInt(1, saldoResultado);
+			pst.setString(2, objCuenta.getCodCuenta());
+			pst.executeUpdate();
+			resultado = true;
+			
+			
+		}
+		catch(Exception e)
+		{
+			e.toString();
+			resultado =  false;
+		}
+		
+		
+		return resultado;
 	}	
 	
 	//endregion 

@@ -25,8 +25,10 @@ public class ControladorTransaccion {
 		return new Transaccion().consultaTransaccion(request);
 	}
 	
-	public boolean pagarTransaccion(PagoRequest request)
+	public String pagarTransaccion(PagoRequest request)
 	{
-		return new Transaccion().pagarTransaccion(request);
+		Transaccion tx = new Transaccion();
+		String resultado = tx.pagarTransaccion(request); 
+		return  resultado;
 	}
 }

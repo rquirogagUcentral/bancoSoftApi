@@ -131,6 +131,7 @@ public class ServiceTransaccionPago {
 				case "OK":
 				case "CANCELADO":
 				case "CREADO":
+				case "EXPIRADO":
 					return Response.status(Response.Status.OK)
 							.header("Access-Control-Allow-Origin", "*")
 						    .header("Access-Control-Allow-Credentials", "true")
@@ -179,7 +180,8 @@ public class ServiceTransaccionPago {
 			
 			ICrudServices iCrudUsuario =  new Usuario();
 			response = (ConsultaUsuarioResponse) iCrudUsuario.consutar(request);
-			if(response.getEstado().equals("OK"))
+			if(response.getEstado().equals("OK") || 
+					response.getEstado().equals("NO_AUTORIZADO"))
 			{
 				return Response.status(Response.Status.OK)
 						.header("Access-Control-Allow-Origin", "*")
@@ -222,36 +224,39 @@ public class ServiceTransaccionPago {
 	public Response pagarTransaccion(PagoRequest request)
 	{
 		ResponseGenerico response = new ResponseGenerico();
-		boolean resultado = false;
+		String resultado = null;
 		try
 		{
+			
 			resultado =  new ControladorTransaccion().pagarTransaccion(request);
-			if(resultado)
+			request.setEstado(resultado);
+			switch (request.getEstado())
 			{
-				response.setEstado("OK");
-				response.setDescripcionEstado("Pago finalizado correctamente");
-				return Response.status(Response.Status.OK)
-						.header("Access-Control-Allow-Origin", "*")
-					    .header("Access-Control-Allow-Credentials", "true")
-					    .header("Access-Control-Allow-Headers",
-					      "origin, content-type, accept, authorization")
-					    .header("Access-Control-Allow-Methods", 
-					        "GET, POST, PUT, DELETE, OPTIONS, HEAD")
-						.entity(response).build();
+				case "OK":
+					response.setEstado("OK");
+					response.setDescripcionEstado("Pago finalizado correctamente");
+					break;
+				case "FALLIDO":
+					response.setEstado("FALLIDO");
+					response.setDescripcionEstado("El pago no se ha podido finalizar, intente nuevamente.");
+					break;
+				case "EXPIRADO":
+					response.setEstado("EXPIRADO");
+					response.setDescripcionEstado("El pago no se ha podido finalizar, intente nuevamente.");
+					break;
+				case "CANCELADO":
+					response.setEstado("CANCELADO");
+					response.setDescripcionEstado("El pago no se ha podido finalizar, intente nuevamente.");
+					break;
 			}
-			else
-			{
-				response.setEstado("FALLIDO");
-				response.setDescripcionEstado("El pago no se ha podido finalizar, intente nuevamente.");
-				return Response.status(Response.Status.OK)
-						.header("Access-Control-Allow-Origin", "*")
-					    .header("Access-Control-Allow-Credentials", "true")
-					    .header("Access-Control-Allow-Headers",
-					      "origin, content-type, accept, authorization")
-					    .header("Access-Control-Allow-Methods", 
-					        "GET, POST, PUT, DELETE, OPTIONS, HEAD")
-						.entity(response).build();
-			}
+			return Response.status(Response.Status.OK)
+					.header("Access-Control-Allow-Origin", "*")
+				    .header("Access-Control-Allow-Credentials", "true")
+				    .header("Access-Control-Allow-Headers",
+				      "origin, content-type, accept, authorization")
+				    .header("Access-Control-Allow-Methods", 
+				        "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+					.entity(response).build();
 			
 		}
 		catch(Exception e)
