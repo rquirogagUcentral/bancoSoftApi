@@ -29,6 +29,7 @@ public class ServiceTransaccionPago {
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response crearTransaccion(TransaccionPagoRequest request)
 	{
+		String metodo = "Service.Transaccion.crearTransaccion";
 		TransaccionPagoResponse response = null;
 		ControladorTransaccion ct = new ControladorTransaccion();
 		try

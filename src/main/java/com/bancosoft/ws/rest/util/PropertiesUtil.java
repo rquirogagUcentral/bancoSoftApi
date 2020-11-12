@@ -1,8 +1,10 @@
 package com.bancosoft.ws.rest.util;
 
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
+import java.util.TimeZone;
 
 public class PropertiesUtil {
 	public static Properties loadProperty(String propertiesURL){
@@ -26,16 +28,16 @@ public class PropertiesUtil {
 		Date fechaActual = null;
 		try
 		{
-			fechaActual = java.sql.Date.valueOf(java.time.LocalDate.now());
+			fechaActual = new Date();
 			milisegundos = fechaActual.getTime() - fecha.getTime();
-			tiempoAho = (int) (milisegundos / 1000) % 60;
+			tiempoAho = (int) (milisegundos / 1000) ;
 			if (tiempoAho >= tiempoExp)
 				resultado = true;
 		}
 		catch (Exception e)
 		{
 			e.toString();
-			resultado = true;
+			resultado = false;
 		}
 		
 		return resultado;

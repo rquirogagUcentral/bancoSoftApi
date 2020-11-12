@@ -1,10 +1,13 @@
 package com.bancosoft.ws.rest.mo;
 
 import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.TimeZone;
 
 import com.bancosoft.ws.rest.DAO.ProductDAO;
 import com.bancosoft.ws.rest.util.PropertiesUtil;
@@ -112,7 +115,7 @@ public class Transaccion {
 		        {
 		        	tpr.setDescripcionEstado("Transaccion creada correctamente");
 					tpr.setEstado("CREADO");
-					tpr.setLifetimeSecs("480 Seg");
+					tpr.setLifetimeSecs("270 Seg");
 					tpr.setUrlRedirigir(host + "codPasarela="+request.getCodPasarela()+"&referencia="+request.getReferencia());
 					tpr.setidTransaccion(String.valueOf(codTransaccion));
 		        }
@@ -166,12 +169,18 @@ public class Transaccion {
 				{
 					if (tcr.getEstado() == null)
 						tcr.setEstado("");
+					
+					//DateFormat
+					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+					sdf.setTimeZone(TimeZone.getTimeZone("America/Bogota"));
+					Date fechaTx = sdf.parse(tcr.getTransaccion().getFechaTransaccion()); 
+							; 
 					//true --> transaccion Expirada, false --> transaccion por responder 270 seg
-					/*if(pu.expiraTransaccion(tcr.getTransaccion().getFechaTransaccion()))
+					if(pu.expiraTransaccion(fechaTx))
 					{
 						tcr.setEstado("EXPIRADO");
 						pd.actualizarMovimiento(tcr.getTransaccion().getIdTransaccion(), tcr.getEstado(), null);
-					}*/
+					}
 					
 					tcr.setDescripcionEstado("Id de Transaccion encontrado");
 				}
@@ -206,29 +215,37 @@ public class Transaccion {
 		int id = 0;
 		boolean resultado = false;
 		String devEstado = null;
+		cu = null;
 		try
 		{
 			tx = pd.consultaTransaccion(request.getIdTransaccion());
-//			if (pu.expiraTransaccion(request.getFechaTransaccion()))
-//				request.setEstado("EXPIRADO");
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			sdf.setTimeZone(TimeZone.getTimeZone("America/Bogota"));
+			Date fechaTx = sdf.parse(tx.getFechaTransaccion());
+			if (pu.expiraTransaccion(fechaTx))
+				request.setEstado("EXPIRADO");
 			//id = Integer.parseInt(request.getCuentaOrigen().getIdTitularCuenta());
 			
 			/*Se Consulta de las cuentas del usuario , la cuenta que esta siendo afectada en la transacción*/
-			cu = pd.consultaCuentas(Integer.parseInt(request.getCuentaOrigen().getIdTitularCuenta()), request.getCuentaOrigen().getNombreTitularCuenta());
-			for(Cuenta cuenta: cu)
+			if(request.getCuentaOrigen()!=null)
 			{
-				if(cuenta.getCodCuenta().equals(request.getCuentaOrigen().getCodCuenta()))
+				cu = pd.consultaCuentas(Integer.parseInt(request.getCuentaOrigen().getIdTitularCuenta()), request.getCuentaOrigen().getNombreTitularCuenta());
+				
+				
+				for(Cuenta cuenta: cu)
 				{
-					objCuenta.setCodBanco(cuenta.getCodBanco());
-					objCuenta.setCodCuenta(cuenta.getCodCuenta());
-					objCuenta.setIdTitularCuenta(cuenta.getIdTitularCuenta());
-					objCuenta.setNombreTitularCuenta(cuenta.getNombreTitularCuenta());
-					objCuenta.setSaldo(cuenta.getSaldo());
-					objCuenta.setTipoCuenta(cuenta.getTipoCuenta());
+					if(cuenta.getCodCuenta().equals(request.getCuentaOrigen().getCodCuenta()))
+					{
+						objCuenta.setCodBanco(cuenta.getCodBanco());
+						objCuenta.setCodCuenta(cuenta.getCodCuenta());
+						objCuenta.setIdTitularCuenta(cuenta.getIdTitularCuenta());
+						objCuenta.setNombreTitularCuenta(cuenta.getNombreTitularCuenta());
+						objCuenta.setSaldo(cuenta.getSaldo());
+						objCuenta.setTipoCuenta(cuenta.getTipoCuenta());
+					}
 				}
 			}
-			
-			
+				
 			//1. De acuerdo al estado envíado , se actualizan las tablas
 			switch (request.getEstado())
 			{
@@ -254,7 +271,7 @@ public class Transaccion {
 						break;
 					}
 					break;
-				case "EXPIDADO":
+				case "EXPIRADO":
 					resultado = pd.actualizarMovimiento(request.getIdTransaccion(),request.getEstado(), objCuenta);
 					if (resultado)
 						devEstado = "CANCELADO";
