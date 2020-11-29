@@ -132,10 +132,65 @@ public class Usuario implements ICrudServices{
 		
 		return cur;
 	}
+	
+	public ConsultaUsuarioResponse ConsultaUsuario(int request) {
+		ConsultaUsuarioResponse cur = new ConsultaUsuarioResponse();
+		 
+	
+		List<Cuenta> cuentas = new ArrayList<Cuenta>();
+		Usuario usuario = new Usuario();
+		
+		boolean existe = false;
+		String nombreConcat = null;
+		
+		try
+		{
+			usuario= pd.consultaUsuario(request);
+			
+			existe = (usuario != null) ? (request == usuario.getId())? true : false : false;
+			if (existe)
+			{
+				nombreConcat = usuario.getNombre() + " " + usuario.getApellido();
+				cuentas = pd.consultaCuentas(request, nombreConcat);
+				
+				cur.setEstado("OK");
+				cur.setDescripcionEstado("Consulta Exitosa");
+				cur.setUsuario(usuario);
+				cur.setCuentas(cuentas);
+			}
+			else
+			{
+				cur.setEstado("NO_AUTORIZADO");
+				cur.setDescripcionEstado("ERROR: No se encuentra el usuario inscrito en la base de datos");
+			}
+		}
+		catch(Exception e)
+		{
+			e.toString();
+			cur = null;
+		}
+		
+		return cur;
+	}
+	
 	@Override
 	public boolean crear(Object request) {
 		// TODO Auto-generated method stub
-		return false;
+		Usuario usuario = (Usuario) request;
+		boolean resultado = false;
+		try
+		{
+			if (pd.crearUsuario(usuario))
+				resultado = true;
+			else
+				resultado = false;
+		}
+		catch(Exception e)
+		{
+			e.toString();
+			resultado = false;
+		}
+		return resultado;
 	}
 	@Override
 	public boolean actualizar(Object request) {
@@ -147,4 +202,6 @@ public class Usuario implements ICrudServices{
 		// TODO Auto-generated method stub
 		return false;
 	}
+	
+	
 }

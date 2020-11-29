@@ -146,10 +146,95 @@ public class Transaccion {
 	public TransaccionPagoResponse notificarTransaccion(TransaccionNotificacionRequest request) {
 		// TODO Auto-generated method stub
 		TransaccionPagoResponse tpr = new TransaccionPagoResponse();
-		tpr.setDescripcionEstado("Notificacion generada correctamente ticket numero: 13455");
-		tpr.setEstado("OK");
-		tpr.setLifetimeSecs("");
-		tpr.setidTransaccion("1002");
+		TransaccionConsultaResponse tcr = new TransaccionConsultaResponse();
+		TransaccionConsultaRequest tcrq = new TransaccionConsultaRequest();
+		
+		String metodo = "crearTransaccion";
+		Cuenta cu = new Cuenta();
+		Cuenta cuenta = new Cuenta();
+		boolean resultado = false;
+		int codTransaccion; 
+		boolean insMov = false;
+		try
+		{
+			tcrq.setCodPasarela(request.getCodPasarela());
+			tcrq.setIdAplicacion("1");
+			tcrq.setReferencia(request.getReferencia());
+			
+			tcr = pd.consultaTrans(tcrq);
+			
+			if(tcr.getCodPasarela() != null)
+			{
+				System.out.println("transaccion entre mis cuentas");
+				cuenta = (Cuenta) cu.consutar(request.getTransaccion().getCuentaDestino());
+				if(cuenta!=null)
+				{
+					int tipoTransaccion = 1;
+					resultado = pd.actualizarCuenta(cuenta,tipoTransaccion,tcr.getTransaccion().getValor());
+					tpr.setDescripcionEstado("Se realiza la actualización correcta del deposito a la cuenta Destino.");
+					tpr.setEstado("OK");
+				}
+				else
+				{
+					tpr.setDescripcionEstado("Número de cuenta Errado,no se puede hacer depósito, por favor verificar");
+					tpr.setEstado("FALLIDO");
+				}
+			}
+			else
+			{
+				System.out.println("transaccion entre otras cuentas");
+				cuenta = (Cuenta) cu.consutar(request.getTransaccion().getCuentaDestino());
+				if(cuenta != null)
+				{
+					codTransaccion = pd.proxCodTransaccion(metodo);
+					Properties prop = PropertiesUtil.loadProperty(UF_PROPERTIES);
+			        String host = prop.getProperty(UF_HOST_PROP);
+			        
+			        //se transforma request en objeto tprq
+			        TransaccionPagoRequest tprq = new TransaccionPagoRequest();
+			        
+			        tprq.setCodPasarela(request.getCodPasarela());
+			        tprq.setReferencia(request.getReferencia());
+			        tprq.setDestinoComercio(request.getTransaccion().getCuentaDestino());
+			        tprq.setOrigenComercio(new OrigenComercio(request.getTransaccion().idTransaccion,request.getTransaccion().getValor(),request.getTransaccion().descripcion));
+			        
+			        /*Ingreso de la transacción en la base de datos tablas : movimientos, movimiento_cuentas, */
+			        insMov = pd.InsertaMovimiento(codTransaccion, tprq);
+			        if(insMov)
+			        {
+			        	String codTx=codTransaccion+"";
+			        	insMov = pd.actualizarMovimiento(codTx, "OK", cuenta);
+			        	int tipoTransaccion = 1;
+			        	if(insMov)
+			        		resultado = pd.actualizarCuenta(cuenta,tipoTransaccion,tcr.getTransaccion().getValor());
+			        	
+			        	if(resultado)
+				        {
+				        	tpr.setDescripcionEstado("Transaccion creada correctamente");
+							tpr.setEstado("OK");
+							tpr.setidTransaccion(String.valueOf(codTransaccion));
+				        }
+				        else
+				        {
+				        	tpr.setDescripcionEstado("ERROR: no se logra crear la transacción correctamente.");
+							tpr.setEstado("FALLIDO");
+				        }
+			        }
+			        	
+			        
+				}
+				else
+				{
+					tpr.setDescripcionEstado("Número de cuenta Errado,no se puede hacer depósito, por favor verificar");
+					tpr.setEstado("FALLIDO");
+				}
+			}
+		}
+		catch(Exception e)
+		{
+			e.toString();
+		}
+		
 		return tpr;
 	}
 	

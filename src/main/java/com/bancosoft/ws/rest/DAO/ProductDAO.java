@@ -17,6 +17,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.concurrent.ExecutionException;
 
+import javax.xml.bind.ParseConversionEvent;
+
 import com.bancosoft.ws.rest.mo.Cuenta;
 import com.bancosoft.ws.rest.mo.Transaccion;
 import com.bancosoft.ws.rest.mo.TransaccionConsultaRequest;
@@ -87,7 +89,7 @@ public class ProductDAO {
 					}
 					break;
 				case "crearCuenta":
-					PreparedStatement sta = connection.prepareStatement("SELECT ID FROM CUENTAS ORDER BY ID DESC LIM 1");
+					PreparedStatement sta = connection.prepareStatement("SELECT ID FROM CUENTAS ORDER BY ID DESC LIMIT 1");
 					ResultSet rst= sta.executeQuery();
 					while(rst.next())
 					{
@@ -117,6 +119,7 @@ public class ProductDAO {
 		//Connection connection=Singleton.getConnection();
 		Connection connection = Singleton.cadenaConexion();
 		boolean resultado;
+		int indMovimiento = 0; 
 		
 		try
 		{
@@ -126,6 +129,9 @@ public class ProductDAO {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			sdf.setTimeZone(TimeZone.getTimeZone("America/Bogota"));
 			String currentTime = sdf.format(dt);
+			
+			if(request.getUrlRetorno() == null)
+				indMovimiento = 1;
 			
 			PreparedStatement ps =  connection.prepareStatement("INSERT INTO MOVIMIENTOS VALUES (?,?,?,?,?,?,?,?,?,?,?);");
 			ps.setInt(1, codTransaccion);
@@ -351,10 +357,10 @@ public class ProductDAO {
 						tId = "CE";
 						break;
 					case 3:
-						tId = "PP";
+						tId = "NIT";
 						break;
 					case 4:
-						tId = "NIT";
+						tId = "PP";
 						break;
 				}
 				usu = new Usuario(
@@ -457,6 +463,14 @@ public class ProductDAO {
 				e.toString();
 				resultado = false;
 			}
+			finally {
+				try {
+					connection.close();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 		}
 		
 		return resultado;
@@ -516,6 +530,14 @@ public class ProductDAO {
 			e.toString();
 			tx = null;
 		}
+		finally {
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		return tx;
 	}
 
@@ -529,7 +551,7 @@ public class ProductDAO {
 			if (tipoTransaccion == 0)
 				saldoResultado = pu.operación(objCuenta.getSaldo(),valor,"DEBITO");//Debito a la cuenta				
 			else
-				saldoResultado = pu.operación(objCuenta.getSaldo(),valor,"DEBITO");//Deposita en cuenta
+				saldoResultado = pu.operación(objCuenta.getSaldo(),valor,"DEPOSITO");//Deposita en cuenta
 			
 			PreparedStatement pst = connection.prepareStatement("UPDATE CUENTAS SET SALDO_CUENTA = ? WHERE NUMERO_CUENTA = ?");
 			pst.setInt(1, saldoResultado);
@@ -544,8 +566,118 @@ public class ProductDAO {
 			e.toString();
 			resultado =  false;
 		}
+		finally {
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		
 		
+		return resultado;
+	}
+
+	public Cuenta consultaCuenta(String codCuenta) {
+		Connection connection = Singleton.cadenaConexion();
+		Cuenta cu = new Cuenta();
+		try
+		{
+			PreparedStatement ps = connection.prepareStatement("SELECT COD_BANCO, TIPO_CUENTA_ID, NUMERO_CUENTA, USUARIOS_ID, SALDO_CUENTA FROM CUENTAS WHERE NUMERO_CUENTA = ? ");
+			ps.setString(1, codCuenta);
+			ResultSet rs= ps.executeQuery();
+			while(rs.next())
+			{
+				cu.setCodBanco(rs.getString(1));
+				cu.setTipoCuenta(rs.getString(2));
+				cu.setCodCuenta(rs.getString(3));
+				cu.setIdTitularCuenta(rs.getString(4));
+				cu.setSaldo(rs.getInt(5));
+			}
+		}
+		catch(Exception e)
+		{
+			e.toString();
+			cu=null;
+		}
+		finally {
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		return cu;
+	}
+
+	public boolean crearCuenta(Cuenta request) {
+		// TODO Auto-generated method stub
+		Connection connection = Singleton.cadenaConexion();
+		boolean resultado = false;
+		try
+		{
+			int idCuenta = proxCodTransaccion("crearCuenta");
+			
+			PreparedStatement pst = connection.prepareStatement("INSERT INTO CUENTAS (ID, NUMERO_CUENTA, USUARIOS_ID, TIPO_CUENTA_ID, SALDO_CUENTA, COD_BANCO) VALUES (?,?,?,?,?,?)");
+			pst.setInt(1, idCuenta);
+			pst.setString(2, request.getCodCuenta());
+			pst.setInt(3, Integer.parseInt(request.getIdTitularCuenta()));
+			pst.setInt(4, Integer.parseInt(request.getTipoCuenta()));
+			pst.setInt(5, request.getSaldo());
+			pst.setString(6, request.getCodBanco());
+			pst.executeUpdate();
+			resultado =  true;
+		}
+		catch(Exception e)
+		{
+			e.toString();
+			resultado=false;
+		}
+		finally {
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return resultado;
+	}
+
+	public boolean crearUsuario(Usuario usuario) {
+		Connection connection = Singleton.cadenaConexion();
+		boolean resultado = false;
+		try
+		{
+			PreparedStatement pst = connection.prepareStatement("INSERT INTO PERSONAS (ID, NOMBRE, APELLIDO, CORREO, CONTRASENA, DOCUMENTO, TIPOS_DOCUMENTO_ID, ROLES_IDROLES) VALUES (?,?,?,?,?,?,?,?)");
+			pst.setInt(1, usuario.getId());
+			pst.setString(2, usuario.getNombre());
+			pst.setString(3, usuario.getApellido());
+			pst.setString(4, usuario.getCorreo());
+			pst.setString(5, usuario.getContrasena());
+			pst.setString(6, usuario.getId()+"");
+			pst.setInt(7, Integer.parseInt(usuario.getTipoDocumento()));
+			pst.setInt(8, Integer.parseInt(usuario.getTipoUsuario()));
+			pst.executeUpdate();
+			resultado =  true;
+		}
+		catch(Exception e)
+		{
+			e.toString();
+			resultado = false;
+		}
+		finally 
+		{
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		return resultado;
 	}	
 	

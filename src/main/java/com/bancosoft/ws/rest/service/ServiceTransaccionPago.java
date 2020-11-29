@@ -1,8 +1,13 @@
 package com.bancosoft.ws.rest.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -11,6 +16,8 @@ import com.bancosoft.ws.rest.Facade.ICrudServices;
 import com.bancosoft.ws.rest.controller.ControladorTransaccion;
 import com.bancosoft.ws.rest.mo.ConsultaUsuarioRequest;
 import com.bancosoft.ws.rest.mo.ConsultaUsuarioResponse;
+import com.bancosoft.ws.rest.mo.CrearUsuarioRequest;
+import com.bancosoft.ws.rest.mo.Cuenta;
 import com.bancosoft.ws.rest.mo.PagoRequest;
 import com.bancosoft.ws.rest.mo.ResponseGenerico;
 import com.bancosoft.ws.rest.mo.TransaccionConsultaRequest;
@@ -23,6 +30,8 @@ import com.bancosoft.ws.rest.mo.Usuario;
 @Path("/api")
 public class ServiceTransaccionPago {
 	
+	private ResponseGenerico response;
+
 	@POST
 	@Path("/crearTransaccion")
 	@Consumes({MediaType.APPLICATION_JSON})
@@ -218,6 +227,59 @@ public class ServiceTransaccionPago {
 		}
 	}
 	
+	
+	@GET
+	@Path("/consultaUsuario/{id}")
+	@Consumes({MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_JSON})
+	public Response consultaUsuario(@PathParam("id") int request)
+	{
+		ConsultaUsuarioResponse response = null;
+		ConsultaUsuarioResponse usuario = new ConsultaUsuarioResponse();
+		Usuario usu= new Usuario();
+		
+		try
+		{
+			usuario = usu.ConsultaUsuario(request);
+			
+			if(usuario.getEstado().equals("OK"))
+			{
+				return Response.status(Response.Status.OK)
+						.header("Access-Control-Allow-Origin", "*")
+					    .header("Access-Control-Allow-Credentials", "true")
+					    .header("Access-Control-Allow-Headers",
+					      "origin, content-type, accept, authorization")
+					    .header("Access-Control-Allow-Methods", 
+					        "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+						.entity(usuario).build();
+			}
+			else
+			{
+				return Response.status(Response.Status.OK)
+						.header("Access-Control-Allow-Origin", "*")
+					    .header("Access-Control-Allow-Credentials", "true")
+					    .header("Access-Control-Allow-Headers",
+					      "origin, content-type, accept, authorization")
+					    .header("Access-Control-Allow-Methods", 
+					        "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+						.entity(usuario).build();
+			}
+		}
+		catch(Exception e)
+		{
+			return Response.status(Response.Status.BAD_REQUEST)
+					.header("Access-Control-Allow-Origin", "*")
+				    .header("Access-Control-Allow-Credentials", "true")
+				    .header("Access-Control-Allow-Headers",
+				      "origin, content-type, accept, authorization")
+				    .header("Access-Control-Allow-Methods", 
+				        "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+					.entity(usuario).build();
+		}
+		
+	}
+	
+	
 	@POST
 	@Path("/pagarTransaccion")
 	@Consumes({MediaType.APPLICATION_JSON})
@@ -276,4 +338,107 @@ public class ServiceTransaccionPago {
 		}
 	
 	}
+	
+	@POST
+	@Path("/crearUsuario")
+	@Consumes({MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_JSON})
+	public Response crearUsuario(CrearUsuarioRequest request)
+	{
+		ResponseGenerico response = new ResponseGenerico();
+		boolean resultado = false;
+		Usuario usuario = new Usuario();
+		Cuenta cuenta = new Cuenta();
+		ConsultaUsuarioRequest cur = new ConsultaUsuarioRequest();
+		ConsultaUsuarioResponse curs = new ConsultaUsuarioResponse();
+		List<Cuenta> cu = new ArrayList<Cuenta>();
+		boolean existe = false;
+		
+		try
+		{
+			
+			usuario = request.getUsuario();
+			cuenta = request.getCuenta();
+			
+			cuenta.setTipoCuenta(Integer.parseInt(cuenta.getTipoCuenta())+"");
+			cur.setId(usuario.getId());
+			cur.setContrasena(usuario.getContrasena());
+			cur.setTipoDocumento(usuario.getTipoDocumento());
+			
+			
+			ICrudServices iCrudUsuario =  new Usuario();
+			curs = (ConsultaUsuarioResponse) iCrudUsuario.consutar(cur);
+			cu=curs.getCuentas();
+			if(cu != null)
+			{
+				existe = true;
+				for (Cuenta cue: cu)
+				{
+					existe = (cue.getCodCuenta().equals(cuenta.getCodCuenta()));
+					if (existe)
+						break;
+				}	
+				
+				if(!existe)
+				{
+					ICrudServices iCrudCuenta =  new Cuenta();
+					resultado = iCrudCuenta.crear(cuenta);
+				}
+			}
+			else
+			{
+				resultado = iCrudUsuario.crear(usuario);
+				if(resultado)
+				{
+					ICrudServices iCrudCuenta =  new Cuenta();
+					resultado = iCrudCuenta.crear(cuenta);
+				}
+			}
+			
+			if(resultado)
+			{
+				response.setEstado("OK");
+				response.setDescripcionEstado("Creación de cuenta generada con Éxito");
+				
+				return Response.status(Response.Status.OK)
+						.header("Access-Control-Allow-Origin", "*")
+					    .header("Access-Control-Allow-Credentials", "true")
+					    .header("Access-Control-Allow-Headers",
+					      "origin, content-type, accept, authorization")
+					    .header("Access-Control-Allow-Methods", 
+					        "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+						.entity(response).build();
+			}
+			else
+			{
+				response.setEstado("FALLIDO");
+				response.setDescripcionEstado("Creación de cuenta no se pudo generar, Usuario o Cuenta ya existente ");
+				return Response.status(Response.Status.OK)
+						.header("Access-Control-Allow-Origin", "*")
+					    .header("Access-Control-Allow-Credentials", "true")
+					    .header("Access-Control-Allow-Headers",
+					      "origin, content-type, accept, authorization")
+					    .header("Access-Control-Allow-Methods", 
+					        "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+						.entity(response).build();
+			}
+			
+			
+		}
+		catch(Exception e)
+		{
+			return Response.status(Response.Status.BAD_REQUEST)
+					.header("Access-Control-Allow-Origin", "*")
+				    .header("Access-Control-Allow-Credentials", "true")
+				    .header("Access-Control-Allow-Headers",
+				      "origin, content-type, accept, authorization")
+				    .header("Access-Control-Allow-Methods", 
+				        "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+					.entity(response).build();
+		}
+		
+	}
+	
+	
+	
 }
