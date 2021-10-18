@@ -19,6 +19,7 @@ import java.util.concurrent.ExecutionException;
 
 import javax.xml.bind.ParseConversionEvent;
 
+import com.bancosoft.ws.rest.mo.CrearProductoRequest;
 import com.bancosoft.ws.rest.mo.Cuenta;
 import com.bancosoft.ws.rest.mo.Transaccion;
 import com.bancosoft.ws.rest.mo.TransaccionConsultaRequest;
@@ -679,7 +680,160 @@ public class ProductDAO {
 			}
 		}
 		return resultado;
-	}	
+	}
+
+	public boolean crearCuenta(CrearProductoRequest producto) {
+		Connection connection = Singleton.cadenaConexion();
+		boolean resultado = false;
+		try
+		{
+			PreparedStatement pst = connection.prepareStatement("insert into tienda.productos (precio,cantidad,nombre_producto) values (?,?,?)");
+			pst.setInt(1, producto.getPrecio());
+			pst.setInt(2, producto.getCantidad());
+			pst.setString(3, producto.getDescripcion());
+			
+			pst.executeUpdate();
+			resultado =  true;
+		}
+		catch(Exception e)
+		{
+			e.toString();
+			resultado = false;
+		}
+		finally 
+		{
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return resultado;
+	}
+	
+	public List<CrearProductoRequest> consultaProductos() {
+		//Connection connection=Singleton.getConnection();
+		Connection connection = Singleton.cadenaConexion();
+		List<CrearProductoRequest> cu = new ArrayList<CrearProductoRequest>();
+		
+		try
+		{
+			PreparedStatement st = connection.prepareStatement("Select id_Producto, precio, cantidad, nombre_producto from tienda.productos");
+			
+			ResultSet rs= st.executeQuery();
+			while(rs.next())
+			{
+				CrearProductoRequest cta =  new CrearProductoRequest(rs.getInt(1),rs.getInt(2),rs.getInt(3),rs.getString(4));
+				cu.add(cta);
+			}
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		finally {
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return cu;
+	}
+
+	public CrearProductoRequest consultaProductoId(int request) {
+		Connection connection = Singleton.cadenaConexion();
+		CrearProductoRequest cu = new CrearProductoRequest();
+		
+		try
+		{
+			PreparedStatement st = connection.prepareStatement("Select id_Producto, precio, cantidad, nombre_producto from tienda.productos where id_Producto = ?");
+			st.setInt(1, request);
+			ResultSet rs= st.executeQuery();
+			while(rs.next())
+			{
+				cu.setId_Producto(rs.getInt(1));
+				cu.setPrecio(rs.getInt(2));
+				cu.setCantidad(rs.getInt(3));
+				cu.setDescripcion(rs.getString(4));
+			}
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		finally {
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return cu;
+	}
+	
+	public boolean eliminarProductoId(int request) {
+		Connection connection = Singleton.cadenaConexion();
+		boolean result = false;
+		
+		try
+		{
+			PreparedStatement st = connection.prepareStatement("Delete from tienda.productos where id_producto=?");
+			st.setInt(1, request);
+			st.executeUpdate();
+			result =  true;
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			return false;
+		}
+		finally {
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return result;
+	}
+
+	public boolean editarProducto(CrearProductoRequest producto) {
+		Connection connection = Singleton.cadenaConexion();
+		boolean resultado = false ;
+		
+		try
+		{
+			PreparedStatement pst = connection.prepareStatement("UPDATE productos SET nombre_producto = ?, cantidad = ? , precio = ? WHERE id_Producto = ?");
+			pst.setString(1, producto.getDescripcion());
+			pst.setInt(2, producto.getCantidad());
+			pst.setInt(3, producto.getPrecio());
+			pst.setInt(4, producto.getId_Producto());
+			
+			pst.executeUpdate();
+			resultado = true;
+			
+			
+		}
+		catch(Exception e)
+		{
+			e.toString();
+			resultado =  false;
+		}
+		finally {
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return resultado;
+	}
 	
 	//endregion 
 }
