@@ -12,6 +12,7 @@ public class CrearProductoRequest implements ICrudServices{
 	private int precio;
 	private int cantidad;
 	private String descripcion;
+	private boolean checked;
 	
 	ProductDAO pd =  new ProductDAO();
 	
@@ -34,6 +35,19 @@ public class CrearProductoRequest implements ICrudServices{
 		this.descripcion = descripcion;
 	}
 	
+	
+	
+	public CrearProductoRequest(int id_Producto, int precio, int cantidad, String descripcion, boolean checked,
+			ProductDAO pd) {
+		super();
+		this.id_Producto = id_Producto;
+		this.precio = precio;
+		this.cantidad = cantidad;
+		this.descripcion = descripcion;
+		this.checked = checked;
+		this.pd = pd;
+	}
+
 	public int getId_Producto() {
 		return id_Producto;
 	}
@@ -57,6 +71,15 @@ public class CrearProductoRequest implements ICrudServices{
 	}
 	public void setDescripcion(String nombre_Producto) {
 		this.descripcion = nombre_Producto;
+	}
+	
+
+	public boolean isChecked() {
+		return checked;
+	}
+
+	public void setChecked(boolean checked) {
+		this.checked = checked;
 	}
 
 	@Override
