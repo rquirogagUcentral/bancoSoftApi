@@ -17,6 +17,7 @@ import com.bancosoft.ws.rest.Facade.ICrudServices;
 import com.bancosoft.ws.rest.controller.ControladorTransaccion;
 import com.bancosoft.ws.rest.mo.ConsultaUsuarioRequest;
 import com.bancosoft.ws.rest.mo.ConsultaUsuarioResponse;
+import com.bancosoft.ws.rest.mo.CrearPedidoRequest;
 import com.bancosoft.ws.rest.mo.CrearProductoRequest;
 import com.bancosoft.ws.rest.mo.CrearUsuarioRequest;
 import com.bancosoft.ws.rest.mo.Cuenta;
@@ -690,6 +691,108 @@ public class ServiceTransaccionPago {
 			}
 			
 			
+		}
+		catch(Exception e)
+		{
+			return null;
+		}
+		
+	}
+	
+	@POST
+	@Path("/Pedido")
+	@Consumes({MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_JSON})
+	public Response crearPedido(CrearPedidoRequest request)
+	{
+		ResponseGenerico response = new ResponseGenerico();
+		boolean resultado = false;
+		
+		try
+		{
+			
+			ICrudServices iCrudPedido =  new CrearPedidoRequest();
+			resultado = iCrudPedido.crear(request);
+			
+			if(resultado)
+			{
+				response.setEstado("OK");
+				response.setDescripcionEstado("Creación de cuenta generada con Éxito");
+				
+				return Response.status(Response.Status.OK)
+						.header("Access-Control-Allow-Origin", "*")
+					    .header("Access-Control-Allow-Credentials", "true")
+					    .header("Access-Control-Allow-Headers",
+					      "origin, content-type, accept, authorization")
+					    .header("Access-Control-Allow-Methods", 
+					        "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+						.entity(response).build();
+			}
+			else
+			{
+				response.setEstado("FALLIDO");
+				response.setDescripcionEstado("Creación de cuenta no se pudo generar, Usuario o Cuenta ya existente ");
+				return Response.status(Response.Status.OK)
+						.header("Access-Control-Allow-Origin", "*")
+					    .header("Access-Control-Allow-Credentials", "true")
+					    .header("Access-Control-Allow-Headers",
+					      "origin, content-type, accept, authorization")
+					    .header("Access-Control-Allow-Methods", 
+					        "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+						.entity(response).build();
+			}
+			
+			
+		}
+		catch(Exception e)
+		{
+			return Response.status(Response.Status.BAD_REQUEST)
+					.header("Access-Control-Allow-Origin", "*")
+				    .header("Access-Control-Allow-Credentials", "true")
+				    .header("Access-Control-Allow-Headers",
+				      "origin, content-type, accept, authorization")
+				    .header("Access-Control-Allow-Methods", 
+				        "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+					.entity(response).build();
+		}
+		
+	}
+	
+	@GET
+	@Path("/Pedido")
+	@Consumes({MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_JSON})
+	public List<CrearPedidoRequest> obtenerPedidos()
+	{
+		List<CrearPedidoRequest> response = null;
+		
+		try
+		{
+			CrearPedidoRequest op = new CrearPedidoRequest();
+			response = op.consultarPedidos(); 
+			
+			return response;
+		}
+		catch(Exception e)
+		{
+			return null;
+		}
+		
+	}
+	
+	@GET
+	@Path("/Pedido/{id}")
+	@Consumes({MediaType.APPLICATION_JSON})
+	@Produces({MediaType.APPLICATION_JSON})
+	public CrearProductoRequest obtenerPedidoId(@PathParam("id") int request)
+	{
+		CrearProductoRequest response = null;
+		try
+		{
+			CrearProductoRequest op = new CrearProductoRequest();
+			response = op.consultarProdId(request); 
+			
+			return response;
 		}
 		catch(Exception e)
 		{

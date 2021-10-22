@@ -19,8 +19,10 @@ import java.util.concurrent.ExecutionException;
 
 import javax.xml.bind.ParseConversionEvent;
 
+import com.bancosoft.ws.rest.mo.CrearPedidoRequest;
 import com.bancosoft.ws.rest.mo.CrearProductoRequest;
 import com.bancosoft.ws.rest.mo.Cuenta;
+import com.bancosoft.ws.rest.mo.Orden;
 import com.bancosoft.ws.rest.mo.Transaccion;
 import com.bancosoft.ws.rest.mo.TransaccionConsultaRequest;
 import com.bancosoft.ws.rest.mo.TransaccionConsultaResponse;
@@ -833,6 +835,202 @@ public class ProductDAO {
 			}
 		}
 		return resultado;
+	}
+
+	public boolean insertarRecibo(int id_recibo, String fecha, String cedula, int valor_total) {
+		Connection connection = Singleton.cadenaConexion();
+		boolean result = false;
+		
+		try
+		{
+			PreparedStatement pst = connection.prepareStatement("insert into tienda.recibo (id_recibo,fecha,cedula,valor_total) values (?,?,?,?)");
+			pst.setInt(1, id_recibo);
+			pst.setString(2, fecha);
+			pst.setString(3, cedula);
+			pst.setInt(4, valor_total);
+			pst.executeUpdate();
+			
+			result = true;
+		}
+		catch(Exception err)
+		{
+			err.toString();
+			result=false;
+		}
+		
+		return result;
+	}
+
+	public int getNextSeq() {
+		Connection connection = Singleton.cadenaConexion();
+		boolean result = false;
+		int seq_cur = 0;
+		int seq_val = 0;
+		String seq = "SEQ_RECIBO";
+		try
+		{
+			PreparedStatement st = connection.prepareStatement("SELECT SEQ_CUR_VAL FROM tienda.sequence WHERE SEQ_NAME = ?");
+			st.setString(1, seq);
+			ResultSet rs= st.executeQuery();
+			while(rs.next())
+			{
+				seq_cur = rs.getInt(1);
+			}
+			seq_val = seq_cur + 1;
+			result = true;
+		}
+		catch(Exception e)
+		{
+			e.toString();
+			result = false;
+		}
+		
+		if(result)
+		{
+			try
+			{
+				PreparedStatement pst = connection.prepareStatement("UPDATE tienda.sequence SET SEQ_CUR_VAL = ? WHERE SEQ_NAME = ?");
+				pst.setInt(1, seq_val);
+				pst.setString(2, seq);
+				pst.executeUpdate();
+				result = true;
+			}
+			catch(Exception err)
+			{
+				err.toString();
+				result = false;
+			}
+		}
+
+		return seq_val;
+	}
+
+	public boolean insertarOrden(int seq, int id_producto, int cantidad, int valor_total) {
+		Connection connection = Singleton.cadenaConexion();
+		boolean result = false;
+		
+		try
+		{
+			PreparedStatement pst = connection.prepareStatement("INSERT INTO tienda.orden (id_recibo,id_producto,catidad,valor_total) VALUES (?,?,?,?)");
+			pst.setInt(1, seq);
+			pst.setInt(2, id_producto);
+			pst.setInt(3, cantidad);
+			pst.setInt(4, valor_total);
+			pst.executeUpdate();
+			
+			result = true;
+		}
+		catch(Exception err)
+		{
+			err.toString();
+			result=false;
+		}
+		return result;
+	}
+
+	public int consultarcantidad(int id_Producto) {
+		Connection connection = Singleton.cadenaConexion();
+		int current_cant = 0;
+		try
+		{
+			PreparedStatement st = connection.prepareStatement("select cantidad from tienda.productos where id_producto = ?");
+			st.setInt(1, id_Producto);
+			ResultSet rs= st.executeQuery();
+			while(rs.next())
+			{
+				current_cant = rs.getInt(1);
+			}
+			
+		}
+		catch(Exception e)
+		{
+			e.toString();
+			
+		}
+		
+		
+		return current_cant;
+	}
+
+	public List<CrearPedidoRequest> consultaPedidos() {
+		Connection connection = Singleton.cadenaConexion();
+		List<CrearPedidoRequest> cu = new ArrayList<CrearPedidoRequest>();
+		CrearPedidoRequest pedido = new CrearPedidoRequest();
+		CrearProductoRequest producto = new CrearProductoRequest();
+		List<Orden> prods = new ArrayList<Orden>();
+		Orden ord = new Orden();
+		/*Recibo*/
+		int id_recibo = 0;
+		String fechaRecibo = "";
+		String cedula = "";
+		int recValor_total = 0;
+		
+		/*Orden*/
+		int id_orden=0;
+		int id_producto=0;
+		int ord_cant=0;
+		int ord_Valtotal = 0;
+		
+		/*Producto*/
+		int precio = 0;
+		int cant_prod=0;
+		String descripcion="";
+		
+		try
+		{
+			PreparedStatement st = connection.prepareStatement("Select id_recibo, fecha, cedula, valor_total from tienda.recibo");
+			
+			ResultSet rs= st.executeQuery();
+			while(rs.next())
+			{
+				id_recibo = rs.getInt(1);
+				fechaRecibo = rs.getString(2);
+				cedula = rs.getString(3);
+				recValor_total = rs.getInt(4);
+				
+				PreparedStatement st2 = connection.prepareStatement("select id_orden, id_producto, catidad, valor_total from tienda.orden where id_recibo=?");
+				st2.setInt(1, id_recibo);
+				ResultSet rs2= st2.executeQuery();
+				while(rs2.next())
+				{
+					id_orden = rs2.getInt(1);
+					id_producto = rs2.getInt(2);
+					ord_cant = rs2.getInt(3);
+					ord_Valtotal = rs2.getInt(4);
+					
+					PreparedStatement st3 = connection.prepareStatement("select precio, cantidad, nombre_producto from tienda.productos where id_producto=?");
+					st3.setInt(1, id_producto);
+					ResultSet rs3= st3.executeQuery();
+					while(rs3.next())
+					{
+						precio = rs3.getInt(1);
+						cant_prod = rs3.getInt(2);
+						descripcion = rs3.getString(3);
+						
+						producto = new CrearProductoRequest(id_producto, precio, cant_prod, descripcion);
+						ord = new Orden(producto,ord_cant,ord_Valtotal);
+					}
+					prods.add(ord);
+				}
+				
+				
+				pedido =  new CrearPedidoRequest(id_recibo,fechaRecibo, cedula, prods, recValor_total);
+				cu.add(pedido);
+			}
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		finally {
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return cu;
 	}
 	
 	//endregion 
